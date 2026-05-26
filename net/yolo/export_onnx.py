@@ -13,11 +13,20 @@ def export_yolo_to_onnx():
 
     print(f"Loading YOLO model from {args.weights}...")
     model = YOLO(args.weights, task="detect")
-
-    onnx_save_path = args.onnx_save_path or f"../../onnx/{os.path.splitext(os.path.basename(args.weights))[0]}_{args.imgsz}_op{args.opset_v}.onnx"
+    model_name = os.path.splitext(os.path.basename(args.weights))[0]
+    onnx_save_path = args.onnx_save_path or f"../../onnx/{model_name}/{model_name}_{args.imgsz}_op{args.opset_v}.onnx"
     os.makedirs(os.path.dirname(onnx_save_path), exist_ok=True)
 
     print(f"Exporting to ONNX: {onnx_save_path}")
+    model.export(
+        format="onnx",
+        simplify=True,
+        device="cpu",
+        opset=args.opset_v,
+        dynamic=False,
+        imgsz=args.imgsz,
+    )
+
     exported_path = model.export(
         format="onnx",
         simplify=True,
@@ -26,6 +35,7 @@ def export_yolo_to_onnx():
         dynamic=False,
         imgsz=args.imgsz,
     )
+
     exported_path = str(exported_path) if exported_path is not None else ""
     if exported_path and os.path.isfile(exported_path):
         source_path = exported_path
@@ -40,7 +50,7 @@ def export_yolo_to_onnx():
     if os.path.abspath(source_path) != os.path.abspath(onnx_save_path):
         shutil.move(source_path, onnx_save_path)
 
-    print("✅Export finished.")
+    print(f"✅ Export finished. Saved to: {onnx_save_path}")
 
 if __name__ == "__main__":
     export_yolo_to_onnx()
