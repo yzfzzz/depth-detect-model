@@ -59,6 +59,7 @@ class DepthDecoder(nn.Module):
 
             if i in self.scales:
                 f = upsample(self.convs[("dispconv", i)](x), mode='bilinear')
+                self.outputs[("logit", i)] = f
                 self.outputs[("disp", i)] = self.sigmoid(f)
 
         return self.outputs

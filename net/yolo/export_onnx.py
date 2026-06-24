@@ -18,14 +18,6 @@ def export_yolo_to_onnx():
     os.makedirs(os.path.dirname(onnx_save_path), exist_ok=True)
 
     print(f"Exporting to ONNX: {onnx_save_path}")
-    model.export(
-        format="onnx",
-        simplify=True,
-        device="cpu",
-        opset=args.opset_v,
-        dynamic=False,
-        imgsz=args.imgsz,
-    )
 
     exported_path = model.export(
         format="onnx",

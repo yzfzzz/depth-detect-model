@@ -54,7 +54,8 @@ def export_lite_mono_to_onnx():
             features = self.encoder(x)
             outputs = self.decoder(features)
             disp = outputs[("disp", 0)]
-            return disp
+            logit = outputs[("logit", 0)]
+            return disp, logit
 
     end_to_end_model = LiteMonoEnd2End(encoder, depth_decoder)
     end_to_end_model.eval()
@@ -77,7 +78,7 @@ def export_lite_mono_to_onnx():
         opset_version=args.opset_v,                # 默认 12，兼容 Nano 的 TRT 8.x
         do_constant_folding=True,        
         input_names=['input'],           
-        output_names=['disp_output'],    
+        output_names=['disp_output', 'logit_output'],    
         dynamic_axes=None,
         dynamo=False                     # <--- 关键参数：强制禁用新版导出器
     )
@@ -100,15 +101,15 @@ def export_lite_mono_to_onnx():
     # ================= 数值对齐验证 (PyTorch vs ONNX Runtime) =================
     print("Validating numerical alignment between PyTorch and ONNX Runtime...")
     with torch.no_grad():
-        pytorch_output = end_to_end_model(dummy_input).numpy()
+        pytorch_output = end_to_end_model(dummy_input)
     
     ort_session = ort.InferenceSession(onnx_save_path)
     ort_inputs = {'input': dummy_input.numpy()}
     ort_output = ort_session.run(None, ort_inputs)
     
     # 计算误差
-    mean_abs_error = np.mean(np.abs(pytorch_output - ort_output))
-    max_abs_error = np.max(np.abs(pytorch_output - ort_output))
+    mean_abs_error = np.mean(np.abs(pytorch_output[0].numpy() - ort_output[0]))
+    max_abs_error = np.max(np.abs(pytorch_output[0].numpy() - ort_output[0]))
     print(f"Mean Absolute Error: {mean_abs_error:.6f}")
     print(f"Max Absolute Error:  {max_abs_error:.6f}")
     if mean_abs_error < 1e-5:
