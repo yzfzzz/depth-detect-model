@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import argparse
 import os
 import numpy as np
@@ -9,11 +10,14 @@ import pycuda.autoinit
 
 TRT_LOGGER = trt.Logger(trt.Logger.INFO)
 
+# 兼容 Jetson 旧版 TRT：若不存在 IInt8EntropyCalibrator2 则降级为普通类
+_Int8CalibBase = getattr(trt, "IInt8EntropyCalibrator2", object)
+
 
 # ============================================================
 # INT8 校准器：从视频文件中按间隔抽取帧
 # ============================================================
-class VideoInt8Calibrator(trt.IInt8EntropyCalibrator2):
+class VideoInt8Calibrator(_Int8CalibBase):
     """
     从视频文件中按间隔抽取帧，做与推理一致的预处理后提供给 TensorRT 做 INT8 校准。
     修复 TRT10 Bug: 使用 pycuda 分配 Device 显存，并在 get_batch 中返回 GPU 指针。
@@ -252,7 +256,10 @@ def build_engine_from_onnx(
                 mean=mean,
                 std=std,
             )
-            config.int8_calibrator = calibrator
+            
+            # 兼容 Jetson 旧版 TRT：若 config 无 int8_calibrator 属性则跳过
+            if hasattr(config, "int8_calibrator"):
+                config.int8_calibrator = calibrator
 
         # ---- FP16 ----
         if fp16:
