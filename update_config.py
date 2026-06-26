@@ -254,10 +254,10 @@ def main():
         print(f"[WARN] config.yaml 不存在: {config_yaml}")
 
     # 更新 benchmark.yaml
-    if os.path.isfile(bench_yaml):
-        update_benchmark_yaml(bench_yaml, engines, project_root)
-    else:
-        print(f"[WARN] benchmark.yaml 不存在: {bench_yaml}")
+    # if os.path.isfile(bench_yaml):
+    #     update_benchmark_yaml(bench_yaml, engines, project_root)
+    # else:
+    #     print(f"[WARN] benchmark.yaml 不存在: {bench_yaml}")
 
     print("  [DONE] 配置文件更新完成")
 
