@@ -9,7 +9,7 @@ def export_yolo_to_onnx():
     parser.add_argument("--imgsz", type=int, default=640, help="Input image size, e.g. 320")
     parser.add_argument("--opset_v", type=int, default=11, help="ONNX opset version")
     parser.add_argument("--onnx_save_path", type=str, default=None, help="Output ONNX path")
-    parser.add_argument("--end2end", type=bool, default=False, help="is end2end model")
+    parser.add_argument("--end2end", action="store_true", default=False, help="Export end2end model")
     args = parser.parse_args()
 
     print(f"Loading YOLO model from {args.weights}...")
